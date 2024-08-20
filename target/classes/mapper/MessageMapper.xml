@@ -1,0 +1,88 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aaa.mapper.MessageMapper">
+
+    <select id="listMessage" parameterType="MessageVo" resultType="Message">
+        SELECT
+        _sm.id AS id,
+        _sm.sender_id AS senderId,
+        _sm.receiver_id AS receiverId,
+        _sm.message_content AS messageContent,
+        _sm.message_title AS messageTitle,
+        _sm.message_type AS messageType,
+        _sm.send_time AS sendTime,
+        _sm.is_read AS isRead,
+        _sm.remark AS remark,
+        _sm.attachment AS attachment,
+        _sm.create_time AS createTime,
+        `status` AS status,
+        _user.realname as receiverName,
+        case when _sm.is_read = 1 then '未读'
+        when _sm.is_read = 2 then '已读'
+        end as messageStatus
+        FROM sys_message _sm
+        left join sys_user _user
+        on _sm.receiver_id = _user.userid
+        <where>
+            <if test="receiverId != null and receiverId != ''">
+                and _sm.receiver_id = #{receiverId}
+            </if>
+            <if test="messageType != null and messageType != ''">
+                and _sm.message_type = #{messageType}
+            </if>
+            <if test="messageTitle != null and messageTitle != ''">
+                and message_title like concat('%',#{messageTitle},'%')
+            </if>
+            <if test="isRead != null and isRead != ''">
+                and is_read = #{isRead}
+            </if>
+        </where>
+        order by _sm.create_time desc
+    </select>
+    <!-- 查询消息 -->
+    <select id="selectMessageById" parameterType="long" resultType="Message">
+        SELECT *
+        FROM sys_message
+        WHERE id = #{id}
+    </select>
+
+    <!-- 插入消息 -->
+    <insert id="insertMessage" parameterType="Message">
+        INSERT INTO sys_message (sender_id, receiver_id, message_content, message_title, message_type, remark,
+                                 attachment)
+        VALUES (#{senderId}, #{receiverId}, #{messageContent}, #{messageTitle}, #{messageType},
+                #{remark}, #{attachment})
+    </insert>
+
+    <update id="updateIsRead" parameterType="java.lang.Long">
+        UPDATE sys_message
+        SET is_read = 2
+        WHERE id = #{messageId}
+    </update>
+
+    <!-- 更新消息 -->
+    <update id="updateMessage" parameterType="Message">
+        UPDATE sys_message
+        SET sender_id       = #{senderId},
+            receiver_id     = #{receiverId},
+            message_content = #{messageContent},
+            message_title   = #{messageTitle},
+            message_type    = #{messageType},
+            send_time       = #{sendTime},
+            is_read         = #{isRead},
+            remark          = #{remark},
+            attachment      = #{attachment},
+            create_time     = #{createTime},
+            status          = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除消息 -->
+    <delete id="deleteMessage" parameterType="long">
+        DELETE
+        FROM sys_message
+        WHERE id = #{id}
+    </delete>
+</mapper>

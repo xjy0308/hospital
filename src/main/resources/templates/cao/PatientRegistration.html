@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all"/>
+</head>
+<body>
+<div class="patient-registration-container">
+    <div class="layui-tab layui-tab-brief" lay-filter="registrationTab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">医生排班表</li>
+            <li lay-id="2">预约挂号</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <table class="layui-table" id="doctorTable" lay-filter="doctorTable">
+                    <thead>
+                    <tr>
+                        <th class="date-col">日期</th>
+                        <th class="time-col">时间段</th>
+                        <th>医生</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td rowspan="3">周一</td>
+                        <td>上午</td>
+                        <td class="one1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="one2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="one3"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">周二</td>
+                        <td>上午</td>
+                        <td class="two1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="two2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="two3"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">周三</td>
+                        <td>上午</td>
+                        <td class="three1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="three2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="three3"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">周四</td>
+                        <td>上午</td>
+                        <td class="four1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="four2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="four3"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">周五</td>
+                        <td>上午</td>
+                        <td class="five1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="five2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="five3"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">周六</td>
+                        <td>上午</td>
+                        <td class="six1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="six2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="six3"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">周日</td>
+                        <td>上午</td>
+                        <td class="seven1"></td>
+                    </tr>
+                    <tr>
+                        <td>下午</td>
+                        <td class="seven2"></td>
+                    </tr>
+                    <tr>
+                        <td>晚上</td>
+                        <td class="seven3"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="layui-tab-item">
+                <!-- 搜索条件开始 -->
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                    <legend>查询条件</legend>
+                </fieldset>
+                <form class="layui-form" method="post" id="searchFrm">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">姓名:</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="reportName" autocomplete="off" class="layui-input"
+                                       style="width:200px">
+                            </div>
+                        </div>
+                        <div class="layui-inline" style="position: absolute;left: 340px;top:127px;">
+                            <div class="layui-input-inline">
+                                <button type="button" class="layui-btn layui-btn-normal  layui-icon layui-icon-search"
+                                        id="doSearch">查询
+                                </button>
+                                <button type="reset" class="layui-btn layui-btn-warm  layui-icon layui-icon-refresh"
+                                        id="reset">重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <!-- 搜索条件结束 -->
+                <!-- 数据表格开始 -->
+                <table class="layui-hide" id="report" lay-filter="report"></table>
+                <div style="display: none;" id="ToolBar">
+                    <button type="button" class="layui-btn layui-btn-sm" lay-event="add">预约挂号</button>
+                </div>
+                <div style="display: none;" id="ToolBarss">
+                    <!--                    <a class="layui-btn layui-btn-xs" lay-event="pay">缴费</a>-->
+                    <button type="button" class="layui-btn layui-btn-sm" lay-event="pay" id="pay">缴费</button>
+<!--                    增加复诊功能按钮-->
+                    <button type="button" class="layui-btn layui-btn-sm" lay-event="followUp">复诊</button>
+                </div>
+                <div style="display: none;padding-top: 20px" id="saveOrUpdateDiv">
+                    <form class="layui-form" lay-filter="dataFrm" id="dataFrm">
+                        <div class="layui-form-item" style="margin-left: 0">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">姓名:</label>
+                                <div class="layui-input-inline">
+                                    <input type="hidden" name="id">
+                                    <input type="text" name="reportName" lay-verify="required" placeholder="请输入用户姓名"
+                                           autocomplete="off"
+                                           class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">性别</label>
+                                <div class="layui-input-inline">
+                                    <input type="radio" name="sex" value="男" title="男" checked>
+                                    <input type="radio" name="sex" value="女" title="女">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">年龄:</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="age" id="age" lay-verify="required|number"
+                                           placeholder="请输入用户年龄" autocomplete="off"
+                                           class="layui-input">
+                                    <input type="hidden" name="users" th:value="${session.yonghu}"/>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">电话:</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="phone" id="phon" lay-verify="required|phone|number"
+                                           placeholder="请输入用户电话" autocomplete="off"
+                                           class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">身份证号:</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="carid" id="idcard" lay-verify="required|identity|number"
+                                           placeholder="请输入用户身份证号" autocomplete="off"
+                                           class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">科室：</label>
+                                <div class="layui-input-inline">
+                                    <select name="department" id="departmentId" lay-verify="required"
+                                            lay-filter="departmentId">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">挂号类型:</label>
+                                <div class="layui-input-inline">
+                                    <select name="reporttype" id="registeredId" lay-verify="required"
+                                            lay-filter="registeredId">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">医生:</label>
+                                <div class="layui-input-inline">
+                                    <select name="doctor" id="doctorId" lay-verify="required" lay-filter="doctorId">
+<!--                                        <option value="" class="doct"></option>-->
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">挂号时间:</label>
+                                <div class="layui-input-inline">
+                                    <input name="time" id="time" placeholder="请选择挂号时间"
+                                           class="layui-input" type="text">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">时间段:</label>
+                                <div class="layui-input-inline">
+                                    <select name="timePeriod" id="timePeriod" class="time_period" ay-verify="required">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">挂号费:</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="price" id="typemoney" lay-verify="required"
+                                           autocomplete="off"
+                                           class="layui-input" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item" style="margin-left: 0">
+                            <div class="layui-input-block">
+                                <button type="button"
+                                        class="layui-btn layui-btn-normal layui-btn-sm layui-icon layui-icon-release"
+                                        lay-filter="doSubmit" lay-submit="">提交
+                                </button>
+                                <button type="reset"
+                                        class="layui-btn layui-btn-warm layui-btn-sm layui-icon layui-icon-refresh">重置
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div style="display: none;padding-top: 20px" id="followupDev">
+                    <h2>排班时间按钮</h2>
+                    <div id="scheduleButtons"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        let predefinedDoctorId = 1; // 请替换为实际的医生ID
+        $.ajax({
+            url: `/api/doctors/${predefinedDoctorId}/schedule`,
+            type: 'GET',
+            success: function(data) {
+                $('#scheduleButtons').empty(); // 清空现有按钮
+                data.forEach(schedule => {
+                    let button = $('<button>')
+                        .addClass('schedule-btn')
+                        .text(schedule.time)
+                        .click(() => alert(`选择了${schedule.time}的排班`)); // 点击处理逻辑可自定义
+                    $('#scheduleButtons').append(button);
+                });
+            },
+            error: function(error) {
+                console.error('Error fetching schedule:', error);
+            }
+        });
+    });
+</script>
+</body>
+<style>
+    .doctorTitle:nth-child(n+2) {
+        margin-left: 20px;
+    }
+
+    .date-col {
+        width: 50px;
+    }
+
+    .time-col {
+        width: 50px;
+    }
+</style>
+<script th:src="@{/layui/layui.js}"></script>
+<script type="text/javascript" th:inline="none">
+
+    layui.use(['element', 'jquery', 'layer', 'form', 'table', 'laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+
+        var element = layui.element;
+
+
+        var laydate = layui.laydate;
+
+        // 动态加载数据后
+        element.render('tab');
+
+        //渲染数据表格
+        tableIns = table.render({
+            elem: '#report'   //渲染的目标对象
+            , url: '../cao/listReportPage' //数据接口
+            , title: '预约挂号信息表'//数据导出来的标题
+            , toolbar: "#ToolBar"   //表格的工具条
+            , height: 'full-200'
+            , page: 1  //是否启用分页, limits: [10, 20, 30]
+            , limits: [7, 20, 30]
+            , limit: 7//默认采用3
+            , cols: [[   //列表数据
+                {field: 'reportId', title: '就诊号', align: 'center', width: '7%', sort: true}
+                , {field: 'reportName', title: '患者姓名', align: 'center', width: '9.4%'}
+                , {field: 'phone', title: '手机号', align: 'center', width: '8%', sort: true}
+                , {field: 'carid', title: '身份证号', align: 'center', width: '12%', sort: true}
+                , {field: 'type', title: '挂号类型', align: 'center', width: '10%'}
+                , {field: 'department', title: '所属科室', align: 'center', width: '12%'}
+                , {field: 'doctorName', title: '就诊医生', align: 'center', width: '10%'}
+                , {field: 'datime', title: '挂号时间', align: 'center', width: '11%', sort: true}
+                , {field: 'timePeriodName', title: '时间段', align: 'center', width: '5%'}
+                , {fixed: '', title: '操作', toolbar: '#ToolBarss', align: 'center', width: '15%'}
+            ]]
+        })
+
+        //挂号类型的id
+        var registeredId = null;
+        //科室id
+        var departmentId = null;
+        //查看选中科室id
+        form.on('select(departmentId)', function (data) {
+            departmentId = data.value;//得到被选中的值
+            //获取select属性下的所有
+            var doctorId1 = document.getElementById("doctorId");
+            doctorId1.length = 0;
+            if (registeredId == null) {
+                return false;
+            } else {
+                //渲染下拉框中的值
+                $.ajax({
+                    //要跳转的地址
+                    url: '../cao/seldoctor',
+                    data: {"registeredid": registeredId, "departmentId": departmentId},
+                    //数据类型
+                    dataType: 'json',
+                    //提交类型
+                    type: 'post',
+                    //查询成功后执行的方法
+                    success: function (data) {
+                        $.each(data, function (index, item) {
+                            $('#doctorId').append(new Option(""));
+                            $('#doctorId').append(new Option(item.doctorName, item.doctorId));// 下拉菜单里添加元素
+                        });
+                        layui.form.render("select");//重新渲染 固定写法
+                    }
+                })
+            }
+        });
+        //查看选中的挂号类型的id
+        form.on('select(registeredId)', function (data) {
+            registeredId = data.value;//得到被选中的值
+            $.ajax({
+                //要跳转的地址
+                url: '../cao/seltymo',
+                data: {"registeredId": registeredId},
+                //数据类型
+                dataType: 'json',
+                //提交类型
+                type: 'post',
+                //查询成功后执行的方法
+                success: function (data) {
+                    $('#typemoney').val(data);
+                }
+            })
+            var doctorId1 = document.getElementById("doctorId");
+            doctorId1.length = 0;
+            if (departmentId == null) {
+                return false;
+            } else {
+                //alert("科室"+departmentId+"类型"+registeredId);
+                //渲染下拉框中的值
+                $.ajax({
+                    //要跳转的地址
+                    url: '../cao/seldoctor',
+                    data: {"registeredid": registeredId, "departmentId": departmentId},
+                    //数据类型
+                    dataType: 'json',
+                    //提交类型
+                    type: 'post',
+                    //查询成功后执行的方法
+                    success: function (data) {
+                        $.each(data, function (index, item) {
+                            $('#doctorId').append(new Option(item.doctorName, item.doctorId));// 下拉菜单里添加元素
+                        });
+                        layui.form.render("select");//重新渲染 固定写法
+                    }
+                })
+            }
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#time', //指定元素
+            type: 'date',
+            format: 'yyyy-MM-dd', //可任意组合
+            min: 0,
+            done: function (value, date) { // 在日期选择完成后触发
+                var now = new Date();
+                var eightAMToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0); // 今天早上8点的时间点
+                var isAfterEightAM = now >= eightAMToday; // 判断当前时间是否已过早上8点
+                // 计算可预约的起始日期
+                var startDate;
+                if (isAfterEightAM) {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 今天作为起始日期
+                } else {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1); // 昨天作为起始日期
+                }
+                // 计算7天后的日期
+                var endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                // 将选定的日期和计算的结束日期转换为统一格式进行比较
+                var selectedDate = new Date(value.replace(/-/g, '/'));
+                // 检查所选日期是否在允许范围内
+                if (selectedDate < startDate || selectedDate > endDate) {
+                    layer.alert('您只能预约七天之内的挂号', {icon: 5});
+                    return;
+                }
+                var optionsHtml = '';
+                var doctorId = $('#doctorId').val();
+                $.ajax({
+                    url: '../paiban/getTimePeriodByDoctorId',
+                    data: {"doctorId": doctorId, "time": value},
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (data) {
+                        // 添加一个空的选项（如果需要的话）
+                        optionsHtml += '<option value=""></option>';
+                        $.each(data, function (index, item) {
+                            // $('.time_period').append(new Option(item, item));// 下拉菜单里添加元素
+                            optionsHtml += '<option value="' + item + '">' + item + '</option>';
+                        });
+                        $('.time_period').html(optionsHtml); // 使用 .html() 来设置下拉菜单的内容
+                        layui.form.render("select");//重新渲染 固定写法
+                    }
+                })
+                $.ajax({
+                    url: '../cao/selDocReport',
+                    data: {"doctorId": doctorId, "time": value},
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (data) {
+                        // 添加一个空的选项（如果需要的话）
+                        if(data >= 3) {
+                            layer.alert('该医生当日挂号数已满', {icon: 5});
+                        }
+                    }
+                })
+            }
+        });
+
+        //渲染科室下拉框中的值
+        $.ajax({
+            //要跳转的地址
+            url: '../cao/seldep',
+            //数据类型
+            dataType: 'json',
+            //提交类型
+            type: 'post',
+            //查询成功后执行的方法
+            success: function (data) {
+                var optionsHtml = '';
+                // 添加一个空的选项（如果需要的话）
+                optionsHtml += '<option value=""></option>';
+                $.each(data, function (index, item) {
+                    // $('#departmentId').append(new Option(item.department, item.departmentId));// 下拉菜单里添加元素
+                    optionsHtml += '<option value="' + item.departmentId + '">' + item.department + '</option>';
+                });
+                $('#departmentId').html(optionsHtml); // 使用 .html() 来设置下拉菜单的内容
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        })
+        //渲染挂号类型的下拉框
+        $.ajax({
+            //要跳转的地址
+            url: '../cao/selreg',
+            //数据类型
+            dataType: 'json',
+            //提交类型
+            type: 'post',
+            //查询成功后执行的方法
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    $('#registeredId').append(new Option(item.type, item.registeredId));// 下拉菜单里添加元素
+                });
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        })
+
+        var url;
+        var mainIndex;
+
+        //打开添加页面
+        function openAddReport() {
+            mainIndex = layer.open({
+                type: 1,
+                title: '预约挂号',
+                content: $("#saveOrUpdateDiv"),
+                area: ['400px', '500px'],
+                success: function (index) {
+                    //清空表单数据
+                    $("#dataFrm")[0].reset();
+                    url = "addre";
+                }
+            });
+        }
+
+        //监听头部工具栏事件
+        table.on("toolbar(report)", function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    //清空表单数据
+                    $("#dataFrm")[0].reset();
+                    $(".time_period").empty();
+                    $("#doctorId").empty();
+                    openAddReport();
+                    break;
+            };
+        })
+
+        table.on('tool(report)', function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            if (layEvent === 'pay') {
+                var imageUrl = '/images/QRCode.jpg'; // 图片的 URL
+                layer.open({
+                    title: '缴费',
+                    type: 1,
+                    closeBtn: 1,
+                    maxmin: true, // 允许全屏最小化
+                    shade: [0.9, '#000'], // 遮罩透明度
+                    anim: 6,
+                    area: ['400px', '420px'],
+                    content: '<div style="text-align: center;">' +
+                        '<p style="color: red;margin: 20px">请在20分钟内进行扫码缴费，超时预约信息将自动取消！</p>' +
+                        '<img src="' + imageUrl + '">' +
+                        '</div>', //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                    end: function (layero, index, type) {
+                        //刷新数据 表格
+                        tableIns.reload();
+                        // 这里监听 layer 关闭事件
+                        // 注意：这个 end 方法是直接在 layer 配置中定义的，而不是全局监听
+                        // 如果要全局监听，需要使用下面的方法
+                    }
+                });
+            }
+            else if(layEvent === 'followUp'){
+                $("#dataFrm")[0].reset();
+                $(".time_period").empty();
+                $("#doctorId").empty();
+                mainIndex = layer.open({
+                    type: 1,
+                    title: '复诊挂号',
+                    content: $("#saveOrUpdateDiv"),
+                    area: ['400px', '500px'],
+                    success: function (index) {
+                        //清空表单数据
+                        $("#dataFrm")[0].reset();
+                        url = "addre";
+                        $.ajax({
+                            url: "../cao/selById", // 数据接口URL
+                            type: "POST", // 请求方法，可以是GET、POST等
+                            data: { reportId: data.reportId }, // 传递的参数
+                            dataType: "json" // 期望返回的数据类型
+                        }).done(function(responses) {
+                            // 请求成功时的处理
+                            if(responses && responses.length > 0) {
+                                var response = responses[0];
+                                if (response.state === 1) {
+                                    // layer.close(index); // 关闭当前弹窗
+                                    layer.closeAll();
+                                    layer.msg('您还未就诊');
+                                }
+
+                                // 在此处理返回的数据
+                                $('[name="reportName"]').val(response.reportName);
+                                $("input[name='sex'][value='" + response.sex + "']").prop("checked", true);
+                                $('[name="age"]').val(response.age);
+                                $('[name="phone"]').val(response.phone);
+                                $('[name="carid"]').val(response.carid);
+                                // $('#departmentId').val(response.department).change();
+                                // $('#registeredId').val(response.type).change();
+                                // // console.log(response.doctorName);
+                                // $('#doctorId').val(response.doctorName).change();
+                            } else {
+                                console.error("数据获取失败或数据格式不正确");
+                            }
+                        }).fail(function(xhr, status, error) {
+                            // 请求失败时的处理
+                            console.error("请求失败:", error);
+                        }).always(function() {
+                            // 无论请求成功或失败都会执行
+                            console.log("请求完成");
+                        });
+
+                    }
+                });
+            }
+        });
+        $.ajax({
+            url: '../main/one',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.oneTimePeriod !== null &&
+                        item.oneTimePeriod !== undefined &&
+                        item.oneTimePeriod !== '' &&
+                        item.oneTimePeriod === '上午') {
+                        $(".one1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.oneTimePeriod !== null &&
+                        item.oneTimePeriod !== undefined &&
+                        item.oneTimePeriod !== '' &&
+                        item.oneTimePeriod === '下午') {
+                        $(".one2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.oneTimePeriod !== null &&
+                        item.oneTimePeriod !== undefined &&
+                        item.oneTimePeriod !== '' &&
+                        item.oneTimePeriod === '晚上') {
+                        $(".one3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        })
+
+        $.ajax({
+            url: '../main/two',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.twoTimePeriod !== null &&
+                        item.twoTimePeriod !== undefined &&
+                        item.twoTimePeriod !== '' &&
+                        item.twoTimePeriod === '上午') {
+                        $(".two1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.twoTimePeriod !== null &&
+                        item.twoTimePeriod !== undefined &&
+                        item.twoTimePeriod !== '' &&
+                        item.twoTimePeriod === '下午') {
+                        $(".two2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.twoTimePeriod !== null &&
+                        item.twoTimePeriod !== undefined &&
+                        item.twoTimePeriod !== '' &&
+                        item.twoTimePeriod === '晚上') {
+                        $(".two3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '../main/three',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.threeTimePeriod !== null &&
+                        item.threeTimePeriod !== undefined &&
+                        item.threeTimePeriod !== '' &&
+                        item.threeTimePeriod === '上午') {
+                        $(".three1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.threeTimePeriod !== null &&
+                        item.threeTimePeriod !== undefined &&
+                        item.threeTimePeriod !== '' &&
+                        item.threeTimePeriod === '下午') {
+                        $(".three2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.threeTimePeriod !== null &&
+                        item.threeTimePeriod !== undefined &&
+                        item.threeTimePeriod !== '' &&
+                        item.threeTimePeriod === '晚上') {
+                        $(".three3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '../main/four',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.fourTimePeriod !== null &&
+                        item.fourTimePeriod !== undefined &&
+                        item.fourTimePeriod !== '' &&
+                        item.fourTimePeriod === '上午') {
+                        $(".four1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.fourTimePeriod !== null &&
+                        item.fourTimePeriod !== undefined &&
+                        item.fourTimePeriod !== '' &&
+                        item.fourTimePeriod === '下午') {
+                        $(".four2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.fourTimePeriod !== null &&
+                        item.fourTimePeriod !== undefined &&
+                        item.fourTimePeriod !== '' &&
+                        item.fourTimePeriod === '晚上') {
+                        $(".four3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '../main/five',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.fiveTimePeriod !== null &&
+                        item.fiveTimePeriod !== undefined &&
+                        item.fiveTimePeriod !== '' &&
+                        item.fiveTimePeriod === '上午') {
+                        $(".five1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.fiveTimePeriod !== null &&
+                        item.fiveTimePeriod !== undefined &&
+                        item.fiveTimePeriod !== '' &&
+                        item.fiveTimePeriod === '下午') {
+                        $(".five2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.fiveTimePeriod !== null &&
+                        item.fiveTimePeriod !== undefined &&
+                        item.fiveTimePeriod !== '' &&
+                        item.fiveTimePeriod === '晚上') {
+                        $(".five3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '../main/six',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.sixTimePeriod !== null &&
+                        item.sixTimePeriod !== undefined &&
+                        item.sixTimePeriod !== '' &&
+                        item.sixTimePeriod === '上午') {
+                        $(".six1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.sixTimePeriod !== null &&
+                        item.sixTimePeriod !== undefined &&
+                        item.sixTimePeriod !== '' &&
+                        item.sixTimePeriod === '下午') {
+                        $(".six2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.sixTimePeriod !== null &&
+                        item.sixTimePeriod !== undefined &&
+                        item.sixTimePeriod !== '' &&
+                        item.sixTimePeriod === '晚上') {
+                        $(".six3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '../main/seven',
+            dataType: 'json',
+            type: 'post',
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.sevenTimePeriod !== null &&
+                        item.sevenTimePeriod !== undefined &&
+                        item.sevenTimePeriod !== '' &&
+                        item.sevenTimePeriod === '上午') {
+                        $(".seven1").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.sevenTimePeriod !== null &&
+                        item.sevenTimePeriod !== undefined &&
+                        item.sevenTimePeriod !== '' &&
+                        item.sevenTimePeriod === '下午') {
+                        $(".seven2").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    } else if (item.sevenTimePeriod !== null &&
+                        item.sevenTimePeriod !== undefined &&
+                        item.sevenTimePeriod !== '' &&
+                        item.sevenTimePeriod === '晚上') {
+                        $(".seven3").append(
+                            "<span class='doctorTitle'>" + item.doctorName + "</span>"
+                        )
+                    }
+                });
+            }
+        });
+
+        //模糊查询
+        $("#doSearch").click(function () {
+            var params = $("#searchFrm").serialize();
+            tableIns.reload({
+                url: "../cao/listReportPage?" + params
+            })
+        });
+        // 重置
+        $("#reset").click(function () {
+            tableIns.reload({
+                url: "../cao/listReportPage"
+            })
+        });
+
+
+        //保存
+        form.on("submit(doSubmit)", function (obj) {
+            var phone = $("#phon").val();
+            var carid = $("#idcard").val();
+            var age = $("#age").val();
+            //序列化表单数据
+            var ad = $("#doctorId").val();
+            if (ad == null) {
+                layer.msg("请选择要就诊的医生")
+            } else if (age <= 0) {
+                layer.msg("请输入正确的年龄")
+            } else {
+                $.post("../cao/phone", {"phone": phone, "carid": carid}, function (obj) {
+                    // if (obj == 1) {
+                    //     layer.msg("该手机号的患者已存在");
+                    // } else if (obj == 2) {
+                    //     layer.msg("该身份证号的患者已存在");
+                    // } else if (obj == 3) {
+                        var params = $("#dataFrm").serialize();
+
+                        $.post(url, params, function (obj) {
+                            layer.msg('添加成功！', function () {
+                                //关闭弹出层
+                                layer.close(mainIndex);
+                                var imageUrl = '/images/QRCode.jpg'; // 图片的 URL
+                                layer.open({
+                                    title: '缴费',
+                                    type: 1,
+                                    closeBtn: 1,
+                                    maxmin: true, // 允许全屏最小化
+                                    shade: [0.9, '#000'], // 遮罩透明度
+                                    anim: 6,
+                                    area: ['400px', '420px'],
+                                    content: '<div style="text-align: center;">' +
+                                        '<p style="color: red;margin: 20px">请在20分钟内进行扫码缴费，超时预约信息将自动取消！</p>' +
+                                        '<img src="' + imageUrl + '">' +
+                                        '</div>', //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                                    end: function (layero, index, type) {
+                                        //刷新数据 表格
+                                        tableIns.reload();
+                                    }
+                                });
+                            }, 1000);
+                        })
+                    //}
+                })
+            }
+        });
+    });
+</script>
+</html>

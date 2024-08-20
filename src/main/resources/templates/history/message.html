@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all"/>
+</head>
+<body>
+<div class="message-container">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend>查询条件</legend>
+    </fieldset>
+    <form class="layui-form" method="post" id="searchFrm">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">标题:</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="messageTitle" autocomplete="off" class="layui-input"
+                           style="width:200px">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">消息类型:</label>
+                <div class="layui-input-inline">
+                    <select name="messageType">
+                        <option value="">请选择</option>
+                        <option value="PAY_NOTIFICATION">缴费通知</option>
+                        <option value="BOOKING_NOTIFICATION">预约通知</option>
+                        <option value="MESSAGE_NOTIFICATION">消息通知</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">消息状态:</label>
+                <div class="layui-input-inline">
+                    <select name="isRead">
+                        <option value="">请选择</option>
+                        <option value="1">未读</option>
+                        <option value="2">已读</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <button type="button" class="layui-btn layui-btn-normal  layui-icon layui-icon-search"
+                            id="doSearch">查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-btn-warm  layui-icon layui-icon-refresh"
+                            id="reset">重置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <!-- 搜索条件结束 -->
+    <!-- 数据表格开始 -->
+    <table class="layui-hide" id="message" lay-filter="message"></table>
+    <div style="display: none;" id="ToolBarss">
+        <!--                    <a class="layui-btn layui-btn-xs" lay-event="pay">缴费</a>-->
+        <button type="button" class="layui-btn layui-btn-sm" lay-event="view" id="view">查看</button>
+    </div>
+
+    <!-- 添加和修改的弹出层开始 -->
+    <div style="display: none;padding: 20px" id="viewDiv">
+        <form class="layui-form" lay-filter="dataFrm" id="dataFrm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">接收人:</label>
+                <div class="layui-input-block">
+                    <input type="hidden" name="roleid">
+                    <input type="text" name="receiverName" placeholder="请输入角色名称" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">消息类型:</label>
+                <div class="layui-input-block">
+                    <input type="text" name="messageTypeName" placeholder="请输入角色备注" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">标题:</label>
+                <div class="layui-input-block">
+                    <input type="text" name="messageTitle" placeholder="请输入角色备注" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">内容:</label>
+                <div class="layui-input-block">
+                    <textarea name="messageContent" placeholder="请输入内容" class="layui-textarea" readonly></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">发送时间:</label>
+                <div class="layui-input-block">
+                    <input type="text" name="sendTime" placeholder="请输入角色备注" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script th:src="@{/layui/layui.js}"></script>
+<script type="text/javascript" th:inline="none">
+
+    layui.use(['element', 'jquery', 'layer', 'form', 'table', 'laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+
+        var element = layui.element;
+
+
+        var laydate = layui.laydate;
+
+        // 动态加载数据后
+        element.render('tab');
+
+        //渲染数据表格
+        tableIns = table.render({
+            elem: '#message'   //渲染的目标对象
+            , url: '../history/listMessagePage' //数据接口
+            , title: '预约挂号信息表'//数据导出来的标题
+            , toolbar: "#ToolBar"   //表格的工具条
+            , height: 'full-200'
+            , page: 1  //是否启用分页, limits: [10, 20, 30]
+            , limits: [7, 20, 30]
+            , limit: 7//默认采用3
+            , cols: [[   //列表数据
+                {field: 'receiverName', title: '接收人', align: 'center', width: '10%'}
+                , {field: 'messageTypeName', title: '消息类型', align: 'center', width: '10%'}
+                , {field: 'messageTitle', title: '标题', align: 'center', width: '13%'}
+                , {field: 'messageContent', title: '内容', align: 'center', width: '37%'}
+                , {field: 'sendTime', title: '发送时间', align: 'center', width: '15%', sort: true}
+                , {field: 'messageStatus', title: '消息状态', align: 'center', width: '8%'}
+                , {fixed: '', title: '操作', toolbar: '#ToolBarss', align: 'center', width: '7%'}
+            ]]
+        });
+
+        //模糊查询
+        $("#doSearch").click(function () {
+            var params = $("#searchFrm").serialize();
+            tableIns.reload({
+                url: "../history/listMessagePage?" + params
+            })
+        });
+        // 重置
+        $("#reset").click(function () {
+            tableIns.reload({
+                url: "../history/listMessagePage"
+            })
+        });
+
+        //监听行工具事件
+        table.on('tool(message)', function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            if (layEvent === 'view') { //查看
+                openView(data);
+            }
+        });
+
+        var url;
+        var mainIndex;
+
+        //打开查看页面
+        function openView(data) {
+            mainIndex = layer.open({
+                type: 1,
+                title: '查看详情',
+                content: $("#viewDiv"),
+                area: ['500px', '450px'],
+                success: function (index) {
+                    form.val("dataFrm", data);
+                    if (data.messageStatus === '未读') {
+                        $.ajax({
+                            //要跳转的地址
+                            url: '../history/updateIsRead',
+                            data: {'messageId': data.id},
+                            //提交类型
+                            type: 'post',
+                            //查询成功后执行的方法
+                            success: function (data) {
+                                tableIns.reload();
+                            }
+                        })
+                    }
+                }
+            });
+        }
+    })
+</script>
+</html>
+

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all"/>
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>查询条件</legend>
+</fieldset>
+
+<form class="layui-form" method="post" id="searchFrm">
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label">用户姓名:</label>
+            <div class="layui-input-inline">
+                <input type="text" name="reportName" autocomplete="off" placeholder="请输入你要查询的信息" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-inline">
+            <div class="layui-input-inline">
+                <button type="button" class="layui-btn layui-btn-normal  layui-icon layui-icon-search"
+                        id="doSearch">查询
+                </button>
+                <button type="reset" class="layui-btn layui-btn-warm  layui-icon layui-icon-refresh"
+                        id="reset">重置
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+<!-- 搜索条件结束 -->
+<!-- 数据表格开始 -->
+<table class="layui-hide" id="userTable" lay-filter="userTable"></table>
+<div id="userBar" style="display: none;">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">处方开具</a>
+</div>
+<!-- 数据表格结束 -->
+<!--患者详细信息开始-->
+<div style="display: none;padding-top: 20px" id="peopleimgeDiv">
+    <fieldset class="layui-elem-field">
+        <legend>患者信息</legend>
+        <div class="layui-field-box">
+            <form class="layui-form" method="post" id="dataFrm">
+                <table style="margin-top: 20px;margin-left: 30px;">
+                    <tr>
+                        <td class="nam">姓名:</td>
+                        <td class="valu">
+                            <input id="reid" type="hidden" class="layui-input" readonly name="reportId"/>
+                            <input id="rename" class="layui-input" type="text" readonly name="reportName"/></td>
+                        <td class="nam">身份证号:</td>
+                        <td class="valu"><input id="carid" class="layui-input" type="text" readonly name="carid"/></td>
+                        <td class="nam">性别:</td>
+                        <td class="valu"><input id="resex" class="layui-input" type="text" readonly/></td>
+                        <td class="nam">年龄:</td>
+                        <td class="valu"><input id="age" class="layui-input" type="text" readonly/></td>
+                        <td rowspan="3" class="sbb">
+                            <!--                    <input id="sbut" type="button" class="layui-btn layui-icon-add-circle-fine" value="开始划价">-->
+                        </td>
+                    </tr>
+                    <tr style="height: 20px"></tr>
+                    <tr>
+                        <td class="nam">科室:</td>
+                        <td class="valu"><input class="layui-input" id="rede" type="text" readonly/></td>
+                        <td class="nam">医生:</td>
+                        <td class="valu"><input class="layui-input" id="redo" type="text" readonly/></td>
+                        <td class="nam">电话:</td>
+                        <td class="valu"><input class="layui-input" id="phone" type="text" readonly/></td>
+                        <td class="nam">挂号费:</td>
+                        <td class="valu"><input class="layui-input" id="price" type="text" readonly/></td>
+                    </tr>
+                    <tr style="height: 20px"></tr>
+                    <tr>
+                        <td class="nam">就诊号</td>
+                        <td class="valu"><input class="layui-input" id="patientNo" type="text" readonly/></td>
+                        <td class="nam">病况</td>
+                        <td class="valu"><input class="layui-input" id="zhuan" type="text"/>
+                            <button id="addConditionBtn" class="layui-btn">编辑病况</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </fieldset>
+    <fieldset class="layui-elem-field">
+        <legend>开具处方信息</legend>
+        <div class="layui-field-box flex-wrapper">
+            <div id="alldrug" class="flex-item">
+                <table class="layui-hide" id="drugtable" lay-filter="drugtable"></table>
+                <div id="adddrug" style="display: none;">
+                    <input type="text" placeholder="请输入药品名字" autocomplete="off" id="drugName"/>
+                    <input type="button" id="selbut" value="查询"/>
+                    <input type="button" id="resetDrug" value="重置"/>
+                </div>
+                <div id="choose" style="display: none;">
+                    <a class="layui-btn layui-btn-xs" lay-event="choose">选择</a>
+                </div>
+                <input type="hidden" id="kunum"><!--药品库存数量-->
+            </div>
+            <div id="drugnum" class="flex-item">
+                <table class="layui-hide" id="hu" lay-filter="hu"></table>
+                <div style="float: right;margin-right: 30px;font-size: 16px;">
+                    总费用：
+                    <span style="color: red" id="zong"></span>元
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</div>
+<!--患者详细信息结束-->
+<script th:src="@{/layui/layui.js}"></script>
+<script type="text/javascript" th:inline="none">
+    var tableIns;
+    var hua;
+    var yaopin;
+    var patientInfo;
+    layui.use(['jquery', 'layer', 'form', 'table'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        //渲染数据表格
+        tableIns = table.render({
+            elem: '#userTable'   //渲染的目标对象
+            , url: '../cao/selhuan' //数据接口
+            , title: '患者数据表'//数据导出来的标题
+            , height: 'full-200'
+            , cellMinWidth: 200 //设置列的最小默认宽度
+            , page: 1  //是否启用分页, limits: [10, 20, 30]
+            , limits: [5, 10, 15]
+            , limit: 5//默认采用3
+            , cols: [[   //列表数据
+                {field: 'reportId', title: '单据号', align: 'center', width: "6%"}
+                , {field: 'reportName', title: '姓名', align: 'center', width: "8%"}
+                , {field: 'phone', title: '电话', align: 'center', width: "9%"}
+                , {field: 'carid', title: '身份证号', align: 'center', width: "9%"}
+                , {field: 'sex', title: '性别', align: 'center', width: "8%"}
+                , {field: 'age', title: '年龄', align: 'center', width: "5%"}
+                , {field: 'department', title: '科室', align: 'center', width: "8%"}
+                , {field: 'doctorName', title: '医生', align: 'center', width: "8%"}
+                , {field: 'type', title: '挂号类别', align: 'center', width: "8%"}
+                , {field: 'time', title: '挂号时间', align: 'center', width: "8%"}
+                , {field: 'price', title: '挂号费', align: 'center', width: "6%"}
+                , {field: 'zhuan', title: '病况', align: 'center', width: "8%", event: 'zhuanClick'}
+                , {fixed: 'right', title: '操作', toolbar: '#userBar', align: 'center', width: '8%'}
+            ]]
+        })
+        //模糊查询
+        $("#doSearch").click(function () {
+            var params = $("#searchFrm").serialize();
+            tableIns.reload({
+                url: "../cao/selhuan?" + params
+            })
+        });
+        // 重置
+        $("#reset").click(function () {
+            tableIns.reload({
+                url: "../cao/selhuan"
+            })
+        });
+
+        var url;
+        var mainIndex;
+
+
+
+
+
+        //打开查看详情页面
+        function openUpdate(data) {
+            mainIndex = layer.open({
+                type: 1,
+                title: '处方开具',
+                content: $("#peopleimgeDiv"),
+                area: ['1100px', '650px'],
+                success: function (index) {
+                    // form.val("dataFrm", data);
+                    patientInfo = data;
+                    $("#reid").val(data.reportId)
+                    $("#rename").val(data.reportName)
+                    $("#resex").val(data.sex)
+                    $("#age").val(data.age)
+                    $("#rede").val(data.department);
+                    $("#redo").val(data.doctorName);
+                    $("#carid").val(data.carid);
+                    $("#phone").val(data.phone);
+                    $("#price").val(data.price);
+                    $("#patientNo").val(data.reportId);
+                    $("#zhuan").val(data.zhuan);
+
+                    var perid = data.reportId;
+                }
+            });
+            yaopin = table.render({
+                elem: '#drugtable'   //渲染的目标对象
+                , url: '../caocc/seldrug' //数据接口
+                , title: '药品信息'
+                , toolbar: "#adddrug"   //表格的工具条
+                , cellMinWidth: 200 //设置列的最小默认宽度
+                /*,parseData:function(res){
+                    return{
+                        "code":0,//如果不用分页后台没有用分页设置code:0的话需要加上这句话
+                        data:res//要不然会报会报返回的数据类型不符合规范
+                    }
+                }*/
+                , page: 1  //是否启用分页, limits: [10, 20, 30]
+                , limits: [5, 10, 15]
+                , limit: 5//默认采用3
+                , cols: [[   //列表    数据
+                    {field: 'pharmacyName', title: '药品名称', align: 'center', width: "20%"}
+                    , {field: 'drugstorenum', title: '库存', align: 'center', width: "20%"}
+                    , {field: 'unitname', title: '单位', align: 'center', width: "20%"}
+                    , {field: 'sellingPrice', title: '单价', align: 'center', width: "20%"}
+                    , {fixed: 'right', title: '操作', toolbar: '#choose', align: 'center', width: '20%'}
+                ]]
+            });
+            hua = table.render({
+                elem: '#hu'   //渲染的目标对象
+                , url: '../caocc/selall?perid=' + data.reportId //数据接口
+                , title: '患者信息'
+                , cellMinWidth: 200 //设置列的最小默认宽度
+                , page: 1  //是否启用分页, limits: [10, 20, 30]
+                , limits: [5, 10, 15]
+                , limit: 5//默认采用3
+                , cols: [[   //列表    数据
+                    {field: 'durgname', title: '药品名称', align: 'center', width: "20%"}
+                    , {field: 'durgnum', title: '数量', align: 'center', width: "15%"}
+                    , {field: 'repiceprice', title: '单价', align: 'center', width: "15%"}
+                    , {field: 'repicetotal', title: '小计', align: 'center', width: "15%"}
+                    , {
+                        fixed: 'right', title: '类别/结果', align: 'center', width: '21%', templet: function (d) {
+                            if (d.state == 1) {
+                                if (d.ostate == 0) {
+                                    return '<font color="#ff4500">项目</font>'
+                                } else if (d.jie == null || d.jie == '') {
+                                    return '<font color=red>未检查</font>'
+                                } else {
+                                    return d.jie
+                                }
+                            } else {
+                                return '<font color="blue">药品</font>'
+                            }
+                        }
+
+                    }
+                    , {
+                        fixed: 'right', title: '操作', align: 'center', width: '15%', templet: function (d) {
+                            return '<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delrepi">删除</a>'
+                        }
+                    }
+                ]]
+            })
+            getTotalCost(data.reportId);
+        }
+
+        $(document).on('click', "#selbut", function () {
+            var drugName = $('#drugName').val();
+            yaopin.reload({
+                url: "../caocc/seldrug?durgname=" + drugName
+            })
+            $('#drugName').val(drugName);
+        });
+
+        $(document).on('click', "#resetDrug", function () {
+            yaopin.reload({
+                url: "../caocc/seldrug?"
+            })
+        });
+
+        function getTotalCost(reportId) {
+            //查询该用户总费用
+            $.post("../caotake/zong", {"reid": reportId}, function (obj) {
+                $("#zong").text(obj)
+            })
+        }
+
+        table.on('tool(drugtable)', function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            if (layEvent === 'choose') {
+                var divHtml = `<div id="viewDiv" style="padding: 20px">
+                    <form class="layui-form" lay-filter="dataFrm1" id="dataFrm1">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">药物编号:</label>
+                            <div class="layui-input-block">
+                                <input type="hidden" name="roleid">
+                                <input type="text" name="pharmacyId" placeholder="请输入药物编号" autocomplete="off"
+                                       class="layui-input" readonly>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">药物名称:</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="pharmacyName" placeholder="请输入药物名称" autocomplete="off"
+                                       class="layui-input" readonly>
+                            </div>
+                        </div>
+                         <div class="layui-form-item">
+                            <label class="layui-form-label">单价:</label>
+                            <div class="layui-input-block">
+                                 <input type="text" name="sellingPrice" placeholder="请输入单价" autocomplete="off"
+                                       class="layui-input" readonly>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">药物用量/次:</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="dosage" lay-verify="required" placeholder="请输入药物用量/次" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">天数:</label>
+                            <div class="layui-input-block">
+                                 <input type="text" name="dayNumber" lay-verify="required" placeholder="请输入天数" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">基本数量:</label>
+                            <div class="layui-input-block">
+                                 <input type="text" name="durgnum" lay-verify="required" placeholder="请输入基本数量" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item" >
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn layui-btn-normal layui-btn-sm layui-icon layui-icon-release"
+                        lay-filter="doSubmit" lay-submit="">提交
+                </button>
+                <button type="reset" class="layui-btn layui-btn-warm layui-btn-sm layui-icon layui-icon-refresh">重置
+                </button>
+            </div>
+        </div>
+                    </form>
+                </div>`;
+                mainIndex = layer.open({
+                    type: 1,
+                    title: '处方开具',
+                    area: ['400px', '500px'],
+                    content: divHtml,
+                    success: function (index) {
+                        $("#dataFrm1")[0].reset();
+                        $("#kunum").val(data.drugstorenum);//库存
+                        form.val("dataFrm1", data);
+                    }
+                });
+
+            }
+        });
+        //监听行工具事件
+        table.on('tool(hu)', function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            if (layEvent === 'delrepi') { //删除
+                layer.confirm('确定删除【' + data.durgname + '】这个药品吗', function (index) {
+                    //向服务端发送删除指令
+                    $.post("../caocc/del", {
+                        cashier: data.cashier,
+                        durnme: data.durgname,
+                        durnum: data.durgnum
+                    }, function (res) {
+                        getTotalCost(data.reportId);
+                        layer.msg(res);
+                        //刷新数据 表格
+                        hua.reload();
+                        yaopin.reload();
+                        // yaopin.reload();
+                    })
+                });
+            }
+        });
+        //保存
+        form.on("submit(doSubmit)", function (obj) {
+            //序列化表单数据
+            // var params = $("#dataFrm1").serialize();
+            var data = obj.field;
+            var reportId = $("#reid").val();
+            var kunum = $("#kunum").val();
+            var num = data.durgnum;
+            if (num == "" || num == 0 || num < 0) {
+                layer.msg("请输入正确的药品的数量");
+            } else if (Number(num) > Number(kunum)) {//判断输入的数量是否大于库存要是大于提示
+                layer.msg("对不起当前库存不足");
+            } else {
+                $.post("../caocc/selchu", {"reid": reportId, "mename": data.pharmacyName}, function (obj) {
+                    //如果为零表示没有这个药则添加
+                    if (obj == 0) {
+                        $.post("../caocc/addPrescription", {
+                            "reportId": reportId,
+                            "durgname": data.pharmacyName,
+                            "durgnum": data.durgnum,
+                            "repiceprice": data.sellingPrice,
+                            "repicetotal": data.sellingPrice * data.durgnum,
+                            "drugstorenum": num
+                        }, function (obj) {
+                            layer.msg("添加成功");
+                            layer.close(mainIndex);
+                            getTotalCost(reportId);
+                            hua.reload();
+                            yaopin.reload();
+                        })
+                    } else {
+                        //如果有则修改数量
+                        $.post("../caocc/editPrescription", {
+                            "reportId": reportId,
+                            "durgname": data.pharmacyName,
+                            "durgnum": num,
+                            "repicetotal": data.sellingPrice * data.durgnum,
+                            "drugstorenum": num
+                        }, function (obj) {
+                            layer.msg("添加成功");
+                            layer.close(mainIndex);
+                            getTotalCost(reportId);
+                            //刷新处方表格
+                            hua.reload();
+                            //刷新药品表格
+                            yaopin.reload();
+                        })
+                    }
+                })
+            }
+
+        });
+
+        // 获取按钮元素
+        var editConditionBtn = document.getElementById('addConditionBtn');
+
+        // 绑定点击事件处理器
+        editConditionBtn.addEventListener('click', function() {
+            // 在这里获取病况输入框的值
+            var newCondition = document.getElementById('zhuan').value;
+
+            // 这里应该有逻辑去更新数据库中对应的病况字段
+            // 假设你已经有了reportId（患者的唯一标识符）
+            var reportId = document.getElementById('reid').value;
+
+            // 你可以使用Ajax请求或其他方法来更新数据库
+            // 下面是一个简单的Ajax示例
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/caotake/updatecondition', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log('病况更新成功');
+                } else if (xhr.readyState === 4) {
+                    console.error('病况更新失败');
+                }
+            };
+            xhr.send('reportId=' + encodeURIComponent(reportId) + '&newCondition=' + encodeURIComponent(newCondition));
+        });
+
+        //监听行工具事件
+        table.on('tool(userTable)', function (obj) {
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            if (layEvent === 'edit') { //查看
+                openUpdate(data);
+            } else if (layEvent === 'zhuanClick') {
+                layer.open({
+                    type: 1, // page 层类型
+                    area: ['500px', '220px'],
+                    title: '添加病况',
+                    shade: 0.6, // 遮罩透明度
+                    shadeClose: true, // 点击遮罩区域，关闭弹层
+                    maxmin: true, // 允许全屏最小化
+                    anim: 0, // 0-6 的动画形式，-1 不开启
+                    content: '<div class="layui-inline"><label class="layui-form-label">病况:</label>\n' +
+                        '                <div class="layui-input-block">\n' +
+                        '                    <textarea name="zhuan" id="zhuan" style="width: 350px;margin-top: 10px" placeholder="请输入病况" class="layui-textarea"></textarea>\n' +
+                        '                </div></div>',
+                    success: function (layero, index) {
+                        // 弹窗打开后的回调，可以在这里给文本框赋值
+                        var zhuanValue = data.zhuan;
+                        $('#zhuan', layero).val(zhuanValue); // 使用layero作为上下文来定位弹窗中的元素
+                    },
+                    btn: ['确认', '取消'],
+                    btn1: function (index, layero, that) {
+                        var zhuan = $('#zhuan').val();
+                        if (!zhuan) {
+                            layer.msg("病况不能为空！");
+                            return false;
+                        }
+                        $.ajax({
+                            //要跳转的地址
+                            url: '../cao/updateZhuanById',
+                            data: {
+                                'reportId': data.reportId,
+                                'zhuan': zhuan
+                            },
+                            //提交类型
+                            type: 'post',
+                            //查询成功后执行的方法
+                            success: function (res) {
+                                if (res == 1) {
+                                    layer.msg("添加病况成功！");
+                                    tableIns.reload();
+                                    layer.close(index);
+                                } else {
+                                    layer.msg("添加病况失败！");
+                                }
+                            }
+                        })
+                    },
+                });
+            }
+        });
+
+
+    })
+</script>
+</body>
+</html>
+<style>
+    .nam {
+        width: 70px;
+        font-size: 16px;
+        color: #737383;
+        padding-left: 15px;
+    }
+
+    .flex-wrapper {
+        display: flex;
+        gap: 10px; /* 行和列之间的间隔 */
+    }
+
+    .flex-item {
+        /* 各占50%的宽度 */
+        flex: 1;
+    }
+
+    #drugName {
+        width: 200px;
+        height: 30px;
+        border: solid #CCCCCC 1px;
+        border-radius: 2px;
+    }
+
+    #selbut {
+        width: 60px;
+        height: 30px;
+        margin-left: 10px;
+        background-color: rgb(1, 150, 136);
+        color: white;
+        border: 0px;
+        border-radius: 2px;
+    }
+
+    #resetDrug {
+        width: 60px;
+        height: 30px;
+        margin-left: 10px;
+        background-color: #1E9FFF;
+        color: white;
+        border: 0px;
+        border-radius: 2px;
+    }
+</style>
+

@@ -1,0 +1,84 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aaa.mapper.PaibanMapper">
+    <select id="findAllPaiban" resultType="paiban">
+        select d.doctorId doctorId,d.doctorName doctorName, p.one one,p.two two,p.three three,p.four four,p.five
+        five,p.six six,p.seven seven,
+        one_time_period AS oneTimePeriod,
+        two_time_period AS twoTimePeriod,
+        three_time_period AS threeTimePeriod,
+        four_time_period AS fourTimePeriod,
+        five_time_period AS fiveTimePeriod,
+        six_time_period AS sixTimePeriod,
+        seven_time_period AS sevenTimePeriod
+        from doctor d LEFT JOIN paiban p on p.doctorId=d.doctorId where d.dstate!=3
+        <where>
+            <if test="doctorName!=null and doctorName!=''">
+                doctorName like concat('%' ,concat(#{doctorName},'%'))
+            </if>
+        </where>
+        order by d.doctorId desc
+    </select>
+    <update id="editPaiban" parameterType="paiban">
+        update paiban
+        set one=#{one},
+            two=#{two},
+            three=#{three},
+            four=#{four},
+            five=#{five},
+            six=#{six},
+            seven=#{seven},
+            one_time_period=#{oneTimePeriod},
+            two_time_period=#{twoTimePeriod},
+            three_time_period=#{threeTimePeriod},
+            four_time_period=#{fourTimePeriod},
+            five_time_period=#{fiveTimePeriod},
+            six_time_period=#{sixTimePeriod},
+            seven_time_period=#{sevenTimePeriod}
+        where doctorId = #{doctorId}
+    </update>
+    <select id="findAllBan" resultType="ban">
+        select*
+        from ban
+    </select>
+    <insert id="insertPaiban" parameterType="paiban">
+        insert into paiban (one, two, three, four, five, six, seven, doctorId,
+                            one_time_period,
+                            two_time_period,
+                            three_time_period,
+                            four_time_period,
+                            five_time_period,
+                            six_time_period,
+                            seven_time_period)
+        values (#{one}, #{two}, #{three}, #{four}, #{five}, #{six}, #{seven}, #{doctorId}, #{oneTimePeriod},
+                #{twoTimePeriod}, #{threeTimePeriod}, #{fourTimePeriod}, #{fiveTimePeriod}, #{sixTimePeriod},
+                #{sevenTimePeriod})
+    </insert>
+    <select id="count" resultType="Integer">
+        select count(doctorId)
+        from paiban
+        where doctorId = #{Id}
+    </select>
+    <select id="getTimePeriodByDoctorId" resultType="Paiban">
+        select
+        one_time_period AS oneTimePeriod,
+        two_time_period AS twoTimePeriod,
+        three_time_period AS threeTimePeriod,
+        four_time_period AS fourTimePeriod,
+        five_time_period AS fiveTimePeriod,
+        six_time_period AS sixTimePeriod,
+        seven_time_period AS sevenTimePeriod
+        from
+        paiban
+        <where>
+            <if test="doctorId != null and doctorId != ''">
+                and doctorId = #{doctorId}
+            </if>
+            <if test="type != null and type != ''">
+                and ${type} = '有班'
+            </if>
+        </where>
+    </select>
+</mapper>

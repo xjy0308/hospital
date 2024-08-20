@@ -1,0 +1,17 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aaa.mapper.PaibanTimePeriodMapper">
+    <select id="findAllPaibanTimePeriod" resultType="PaibanTimePeriod">
+        select
+        id,
+        time_period_name as timePeriodName,
+        create_time as createTime,
+        `status` as status,
+        update_time as updateTime
+        from paiban_time_period
+    </select>
+
+
+</mapper>
